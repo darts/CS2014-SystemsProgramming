@@ -84,14 +84,14 @@ void power(struct list *list)
     add_to_front_of_list(list, numA); //add to the front of the list
 }
 
-double normalise(double prev, double current) //for multiple-digit numbers
+void normalise(double *prev, double current) //for multiple-digit numbers
 {
-    prev = prev * 10; //offset by x10
-    prev += current;  //add to prev
-    return prev;      //return
+    *prev = *prev * 10; //offset by x10
+    *prev += current;  //add to prev
+   // return *prev;      //return
 }
 
-int updatePostFix(double itemRead, struct list *numList, int prev)
+void updatePostFix(double itemRead, struct list *numList, double *prev)
 {
     if (itemRead == 'X')
     {
@@ -117,21 +117,33 @@ int updatePostFix(double itemRead, struct list *numList, int prev)
     {
         if (itemRead == ' ')
         {
-            if (prev != -1)
+            if (*prev != -1)
             { //has previous number
-                add_to_front_of_list(numList, prev);
-                prev = -1; //reset to false
+                add_to_front_of_list(numList, *prev);
+                *prev = -1; //reset to false
             }
         }
         else
         {
             double num = itemRead - '0'; //convert to double
-            if (prev == -1)              //if this is the first number, set prev to 0
-                prev = 0;
-            prev = normalise(prev, num);
+            if (*prev == -1)              //if this is the first number, set prev to 0
+                *prev = 0;
+            normalise(prev, num);
         }
     }
-    return prev;
+    //return prev;
+}
+
+void evalInput(int *isInfix, double itemRead, struct list *numList, double *prev, int *firstCharIsBracket){
+    if(*firstCharIsBracket == -1){
+        if(itemRead == '('){
+            *firstCharIsBracket = 1;
+        }else{
+            *firstCharIsBracket = 0;
+        }
+    }else{ 
+        
+    }
 }
 
 int main(int argc, char const *argv[])
@@ -141,13 +153,17 @@ int main(int argc, char const *argv[])
     file = fopen("input.txt", "r");
     if (file)
     {
-        int isInfix = 0;
-        double prev = -1;                        //no prev number
+        int firstCharIsBracket = -1;
+        int *firstCharIsBracketBool = &firstCharIsBracket;
+        int infix = 0;
+        int *isInfix = &infix;
+        double prevNum = -1;
+        double *prev = &prevNum;                        //no prev number
         struct list *numList = new_empty_list(); //new list
         while ((itemRead = getc(file)) != EOF)   //while there are still numbers
         {
             putchar(itemRead); //show the character being read in
-            prev = updatePostFix(itemRead,numList,prev);
+            updatePostFix(itemRead,numList,prev);
         }
         fclose(file);
         printf("\nThe result is:%f \n", (numList->head)->data);
