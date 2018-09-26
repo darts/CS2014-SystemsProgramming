@@ -34,9 +34,9 @@ double getPrev(struct list *list)
 {
     double numRet = (list->head)->data;      //get the data from the node
     struct listNode *tmpHead = (list->head); //get a temporary pointer to the node
-    list->head = (list->head)->next; //update the pointer in head to point to the next node
-    free(tmpHead);  //free the old node
-    return numRet;  //return the data
+    list->head = (list->head)->next;         //update the pointer in head to point to the next node
+    free(tmpHead);                           //free the old node
+    return numRet;                           //return the data
 }
 
 void multiply(struct list *list)
@@ -44,7 +44,7 @@ void multiply(struct list *list)
     double numA = getPrev(list); //get the previous number
     double numB = getPrev(list); //^^
 
-    numA = numA * numB; //multiply the two
+    numA = numA * numB;               //multiply the two
     add_to_front_of_list(list, numA); //add to the front of the list
 }
 
@@ -53,7 +53,7 @@ void sum(struct list *list)
     double numA = getPrev(list); //get the previous number
     double numB = getPrev(list); //^^
 
-    numA = numA + numB; //sum the two
+    numA = numA + numB;               //sum the two
     add_to_front_of_list(list, numA); //add to the front of the list
 }
 
@@ -62,33 +62,76 @@ void subtract(struct list *list)
     double numA = getPrev(list); //get previous number
     double numB = getPrev(list); //^^
 
-    numA = numB - numA; //get the difference
+    numA = numB - numA;               //get the difference
     add_to_front_of_list(list, numA); //add to the front of the list
 }
 
 void divide(struct list *list)
 {
-    double numA = getPrev(list); //get previous number 
+    double numA = getPrev(list); //get previous number
     double numB = getPrev(list); //^^
 
-    numA = numB / numA; //divide the numbers
+    numA = numB / numA;               //divide the numbers
     add_to_front_of_list(list, numA); //add to the front of the list
 }
 
 void power(struct list *list)
 {
-    double numA = getPrev(list);//get the previous number 
-    double numB = getPrev(list);//^^
+    double numA = getPrev(list); //get the previous number
+    double numB = getPrev(list); //^^
 
-    numA = pow(numA, numB); //raise to the power of....
+    numA = pow(numA, numB);           //raise to the power of....
     add_to_front_of_list(list, numA); //add to the front of the list
 }
 
 double normalise(double prev, double current) //for multiple-digit numbers
 {
     prev = prev * 10; //offset by x10
-    prev += current; //add to prev
-    return prev; //return 
+    prev += current;  //add to prev
+    return prev;      //return
+}
+
+int updatePostFix(double itemRead, struct list *numList, int prev)
+{
+    if (itemRead == 'X')
+    {
+        multiply(numList);
+    }
+    else if (itemRead == '-')
+    {
+        subtract(numList);
+    }
+    else if (itemRead == '/')
+    {
+        divide(numList);
+    }
+    else if (itemRead == '^')
+    {
+        power(numList);
+    }
+    else if (itemRead == '+')
+    {
+        sum(numList);
+    }
+    else
+    {
+        if (itemRead == ' ')
+        {
+            if (prev != -1)
+            { //has previous number
+                add_to_front_of_list(numList, prev);
+                prev = -1; //reset to false
+            }
+        }
+        else
+        {
+            double num = itemRead - '0'; //convert to double
+            if (prev == -1)              //if this is the first number, set prev to 0
+                prev = 0;
+            prev = normalise(prev, num);
+        }
+    }
+    return prev;
 }
 
 int main(int argc, char const *argv[])
@@ -98,48 +141,13 @@ int main(int argc, char const *argv[])
     file = fopen("input.txt", "r");
     if (file)
     {
-        double prev = -1; //no prev number
+        int isInfix = 0;
+        double prev = -1;                        //no prev number
         struct list *numList = new_empty_list(); //new list
-        while ((itemRead = getc(file)) != EOF) //while there are still numbers
-        {   
+        while ((itemRead = getc(file)) != EOF)   //while there are still numbers
+        {
             putchar(itemRead); //show the character being read in
-            if (itemRead == 'X')
-            {
-                multiply(numList);
-            }
-            else if (itemRead == '-')
-            {
-                subtract(numList);
-            }
-            else if (itemRead == '/')
-            {
-                divide(numList);
-            }
-            else if (itemRead == '^')
-            {
-                power(numList);
-            }
-            else if (itemRead == '+')
-            {
-                sum(numList);
-            }
-            else
-            {
-                if (itemRead == ' ')
-                {
-                    if(prev != -1){ //has previous number
-                        add_to_front_of_list(numList, prev);
-                        prev = -1; //reset to false
-                    }
-                }
-                else
-                {
-                    double num = itemRead - '0'; //convert to double
-                    if(prev == -1)//if this is the first number, set prev to 0
-                        prev = 0;
-                    prev = normalise(prev, num);
-                }
-            }
+            prev = updatePostFix(itemRead,numList,prev);
         }
         fclose(file);
         printf("\nThe result is:%f \n", (numList->head)->data);
