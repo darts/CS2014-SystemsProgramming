@@ -7,18 +7,18 @@
 #include <math.h> 
 
 struct listNode {//a node on the list
-double data; //data in the node
-struct listNode * next; //pointer to next node
+    double data; //data in the node
+    struct listNode * next; //pointer to next node
 }; 
 
 struct list {//pointer to a node 
-struct listNode * head; //create a pointer called head to point at first node in list
+    struct listNode * head; //create a pointer called head to point at first node in list
 }; 
 
 struct list * newEmptyList() {//creates a pointer to a list
-struct list * result; //creates a pointer to a list
-result = malloc(sizeof(struct list)); //allocate memory to the list
-result -> head = NULL; //point list's pointer to NULL
+    struct list * result; //creates a pointer to a list
+    result = malloc(sizeof(struct list)); //allocate memory to the list
+    result -> head = NULL; //point list's pointer to NULL
     return result;                        // return the pointer to the list
 };
 
