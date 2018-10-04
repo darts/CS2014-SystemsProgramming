@@ -229,7 +229,6 @@ int main(int argc, char ** argv){
         struct list *rpnList = newEmptyList(); //output list
         while ((itemRead = getc(file)) != EOF){ //while there are still numbers
             if (itemRead != '\n'){
-                putchar(itemRead); //show the character being read in
                 putc(itemRead, outFile);
                 evalInput(firstCharIsBracketBool, itemRead, prev, numList, opList, rpnList);
                 if(isFirstChar == 1){
@@ -241,20 +240,17 @@ int main(int argc, char ** argv){
                     }
                     for(int i = 0; i < n; i++){//read and print the chars
                         double read = getc(file);
-                        putchar(read);
                         putc(read, outFile);
                     }
                     isFirstChar = 0;
                 }
             }else{
-                printf("\n");
                 fprintf(outFile, "\n");
                 if (firstCharIsBracket == 1){
                     firstCharIsBracket = 0;
                     pushInfixStack(rpnList, opList);
                     postfixOnStack(rpnList, numList);
                 }
-                printf("%f\n", (numList->head)->data);
                 fprintf(outFile, "%f\n", (numList->head)->data);
                 isFirstChar = 1;
                 prevNum = -1;
@@ -270,7 +266,6 @@ int main(int argc, char ** argv){
             postfixOnStack(rpnList, numList);
         }
         fclose(file);
-        printf("\n%f \n", (numList->head)->data);
         fprintf(outFile, "\n%f", (numList->head)->data);
     }
     return 0;
