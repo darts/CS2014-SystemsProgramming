@@ -5,6 +5,7 @@
 #include <stdlib.h> 
 #include <stddef.h> 
 #include <math.h> 
+#include <string.h>
 
 struct listNode {//a node on the list
     double data; //data in the node
@@ -128,23 +129,20 @@ void manageInFixStack(double itemRead, double *prev, struct list *opList, struct
         }
         getPrev(opList);
     }else if (itemRead == '^'){ //check precedence
-        while (opList->head->data == '^'){ //check precedence
+        while (opList->head != NULL && opList->head->data == '^'){ //check precedence
             addToEndOfList(rpnList, getPrev(opList));
             addToEndOfList(rpnList, ' ');
         }
         addToFrontOfList(opList, itemRead);
-    }
-    else if (itemRead == 'X' || itemRead == '/') //check precedence
-    {
-        while (opList->head->data == '^') //check precedence
+    }else if (itemRead == 'X' || itemRead == '/'){ //check precedence
+        while (opList->head != NULL && opList->head->data == '^') //check precedence
         {
             addToEndOfList(rpnList, getPrev(opList));
             addToEndOfList(rpnList, ' ');
         }
         addToFrontOfList(opList, itemRead);
-    }
-    else if (itemRead == '-' || itemRead == '+'){ //check precedence
-        while (opList->head->data == '^' || opList->head->data == 'X' || opList->head->data == '/'){ //check precedence
+    }else if (itemRead == '-' || itemRead == '+'){ //check precedence
+        while (opList->head != NULL && (opList->head->data == '^' || opList->head->data == 'X' || opList->head->data == '/')){ //check precedence
             addToEndOfList(rpnList, getPrev(opList));
             addToEndOfList(rpnList, ' ');
         }
@@ -168,12 +166,10 @@ void manageInFixStack(double itemRead, double *prev, struct list *opList, struct
 void evalInput(int *firstCharIsBracket, double itemRead, double *prev,
                struct list *numList, struct list *opList, struct list *rpnList){
     if (*firstCharIsBracket == -1){ //first char
-        if (itemRead == '('){
+        if (itemRead == 'i'){
             *firstCharIsBracket = 1; //use infix
-            manageInFixStack(itemRead, prev, opList, rpnList);
         }else{
             *firstCharIsBracket = 0;
-            updatePostFix(itemRead, numList, prev);
         }
     }else if (*firstCharIsBracket == 0){ //use RPN
         updatePostFix(itemRead, numList, prev);
@@ -193,14 +189,39 @@ void postfixOnStack(struct list *rpnList, struct list *numList)
     }
 }
 
-int main(int argc, char const *argv[])
-{
+void pushInfixStack(struct list *rpnList, struct list *opList){
+    while(opList->head != NULL)
+        addToEndOfList(rpnList, getPrev(opList));
+}
+
+int main(int argc, char ** argv){
+    char * filename;
+
+    if ( argc == 1 ) {
+        printf("Error: No input filename provided\n");
+        printf("Usage: %s <input filename>\n", argv[0]);
+        exit(1);
+  }else if ( argc > 2 ) {
+        printf("Error: Too many command line parameters\n");
+        printf("Usage: %s <input filename>\n", argv[0]);
+        exit(1);
+  }else {
+    filename = argv[1];
+  }
+
     double itemRead;
+    FILE *outFile;
     FILE *file;
-    file = fopen("input.txt", "r");
+    file = fopen(filename, "r");
+    char *newFileName = strcat(filename, ".results");
+    outFile = fopen(newFileName, "w");
+    if(outFile != NULL){
+      //  printf("no file ;-;");
+    }
     if (file){
         int firstCharIsBracket = -1;
         int *firstCharIsBracketBool = &firstCharIsBracket;
+        int isFirstChar = 1;
         double prevNum = -1;
         double *prev = &prevNum;               //no prev number
         struct list *numList = newEmptyList(); //new list
@@ -209,14 +230,33 @@ int main(int argc, char const *argv[])
         while ((itemRead = getc(file)) != EOF){ //while there are still numbers
             if (itemRead != '\n'){
                 putchar(itemRead); //show the character being read in
+                putc(itemRead, outFile);
                 evalInput(firstCharIsBracketBool, itemRead, prev, numList, opList, rpnList);
+                if(isFirstChar == 1){
+                    int n = 0;
+                    if(firstCharIsBracket == 1){//how many chars to print
+                        n = 5;
+                    }else{
+                        n = 6;
+                    }
+                    for(int i = 0; i < n; i++){//read and print the chars
+                        double read = getc(file);
+                        putchar(read);
+                        putc(read, outFile);
+                    }
+                    isFirstChar = 0;
+                }
             }else{
                 printf("\n");
+                fprintf(outFile, "\n");
                 if (firstCharIsBracket == 1){
                     firstCharIsBracket = 0;
+                    pushInfixStack(rpnList, opList);
                     postfixOnStack(rpnList, numList);
                 }
-                printf("\nThe result is:%f \n\n", (numList->head)->data);
+                printf("%f\n", (numList->head)->data);
+                fprintf(outFile, "%f\n", (numList->head)->data);
+                isFirstChar = 1;
                 prevNum = -1;
                 firstCharIsBracket = -1;
                 numList = newEmptyList();
@@ -226,10 +266,12 @@ int main(int argc, char const *argv[])
         }
         if (firstCharIsBracket == 1){
             firstCharIsBracket = 0;
+            pushInfixStack(rpnList, opList);
             postfixOnStack(rpnList, numList);
         }
         fclose(file);
-        printf("\nThe result is:%f \n", (numList->head)->data);
+        printf("\n%f \n", (numList->head)->data);
+        fprintf(outFile, "\n%f", (numList->head)->data);
     }
     return 0;
 }
