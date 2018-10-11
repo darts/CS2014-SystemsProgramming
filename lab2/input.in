@@ -1,5 +1,5 @@
 infix 8 X 3 - 22 
 postfix 2 3 +
 postfix 7 8 3 X 28 + +
-infix 10 X 40 
+infix 8 X 3 - 22 
 infix 8 X 3 - 22 

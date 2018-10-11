@@ -195,7 +195,7 @@ void pushInfixStack(struct list *rpnList, struct list *opList){//clear any remai
         addToEndOfList(rpnList, ' ');
     }
 }
-
+//At the end of an infix read-in
 void finInfix(int *isInfixBool, double *prev, struct list *rpnList, struct list *opList, struct list *numList){
     evalInput(isInfixBool, ' ', prev, numList, opList, rpnList);//clear any remaining item
     evalInput(isInfixBool, ')', prev, numList, opList, rpnList);// ^^
@@ -257,7 +257,7 @@ int main(int argc, char ** argv){
                     isInfix = 0;
                 }
                 fprintf(outFile, "%f\n", (numList->head)->data);
-                isFirstChar = 1;
+                isFirstChar = 1;//Reset everything
                 prevNum = -1;
                 isInfix = -1;
                 numList = newEmptyList();
