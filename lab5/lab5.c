@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 //create the bitset scaffold
 struct bitset{
@@ -91,6 +92,30 @@ int bitset_remove(struct bitset *this, int item){
 
 //place the union of sets src1 and src2 into dst set
 void bitset_union(struct bitset *dest, struct bitset *src1, struct bitset *src2){
-    
+    assert(dest != NULL && src1 != NULL && src2 != NULL);
+    assert(dest->bits_per_word == src1->bits_per_word && src1->bits_per_word == src2->bits_per_word);
+    assert(dest->size_in_bits == src1->size_in_bits && src1->size_in_bits == src2->size_in_bits);
+    for(int i = 0; i < dest->size_in_words; i++){
+        dest->bits[i] = src1->bits[i] | src2->bits[i];
+    }
 }
 
+//place int intersection of sets src1 and src2 into dst set
+void bitset_intersection(struct bitset *dest, struct bitset *src1, struct bitset *src2){
+    assert(dest != NULL && src1 != NULL && src2 != NULL);
+    assert(dest->bits_per_word == src1->bits_per_word && src1->bits_per_word == src2->bits_per_word);
+    assert(dest->size_in_bits == src1->size_in_bits && src1->size_in_bits == src2->size_in_bits);
+    for(int i = 0; i < dest->size_in_words; i++){
+        dest->bits[i] = src1->bits[i] & src2->bits[i];
+    }
+}
+
+//print the contents of a bitset
+void bitset_print(struct bitset *this){
+    int size = bitset_size(this);
+    for(int i = 0; i < size; i++){
+        if(bitset_lookup(this, i) == 1)
+            printf("%d ", i);
+    }
+    printf("\n");
+}
