@@ -1,6 +1,3 @@
-//Infix-Notated inputs must be wrapped in brackets eg 3 + 5 -> ( 3 + 5 )
-//Must have space between each number/operator/bracket
-
 #include <stdio.h> 
 #include <stdlib.h> 
 #include <stddef.h> 
