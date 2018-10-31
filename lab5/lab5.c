@@ -55,19 +55,8 @@ int bitset_cardinality(struct bitset *this){
     return count;
 }
 
-//Check to see if an item is contained in the set
-//Returns 1 if the value is in the set, otherwise returns 0
-int bitset_lookup(struct bitset *this, int item){
-    if(this != NULL){
-        int word_num = item / this->bits_per_word;
-        int bit_num = item % this->bits_per_word;
-        unsigned int word = this->bits[word_num];
-        unsigned int mask = 1<<bit_num;
-        mask&=word;
-    }
-    return 0;
-}
-
+//print the binary value of an unsigned number
+//was created for testing(debugging) and could still be useful
 void printBin(unsigned num){
     unsigned mask = 2147483648;
     for(int i = 0; i < 32; i++){
@@ -80,17 +69,30 @@ void printBin(unsigned num){
     printf("\n");
 }
 
+//Check to see if an item is contained in the set
+//Returns 1 if the value is in the set, otherwise returns 0
+int bitset_lookup(struct bitset *this, int item){
+    if(this != NULL){
+        int word_num = item / this->bits_per_word;
+        int bit_num = item % this->bits_per_word;
+        unsigned int word = this->bits[word_num];
+        unsigned mask = 1<<bit_num;
+        if((mask&word) != 0)
+            return 1;
+        return 0;
+    }
+    return 0;
+}
+
+
+
 //add an item with num 'item' to the set
 int bitset_add(struct bitset *this, int item){
     if(this != NULL){
         int word_num = item / this->bits_per_word;
         int bit_num = item % this->bits_per_word;
-        unsigned mask = 1;
-        mask<<=bit_num;
-        // printBin(mask);
-        printBin(this->bits[word_num]);
-        this->bits[word_num] |= mask;
-        printBin(this->bits[word_num]);
+        unsigned mask = 1<<bit_num;
+        this->bits[word_num] = mask | this->bits[word_num];
         return 1;
     }
     return -1;
@@ -134,10 +136,8 @@ void bitset_intersection(struct bitset *dest, struct bitset *src1, struct bitset
 void bitset_print(struct bitset *this){
     int size = bitset_size(this);
     for(int i = 0; i < size; i++){
-        // printf("%d = %d ", i, bitset_lookup(this, i));
         if(bitset_lookup(this, i) == 1){
             printf("%d ", i);
-            printf("foundAThing ");
         }
     }
     printf("\n");
@@ -157,11 +157,11 @@ void myTest(){
     struct bitset *a = bitset_new(256);
     struct bitset *b = bitset_new(256);
     struct bitset *c = bitset_new(256);
-    char *string1 = "What can you hear";
-    char *string2 = "Nothing but the rain";
+    char *string1 = "What can you hear?";
+    char *string2 = "Nothing but the rain?";
 
     add_chars_to_set(a, string1);
-    add_chars_to_set(a, string2);
+    add_chars_to_set(b, string2);
 
     //print the contents of the sets
     bitset_print(a);
