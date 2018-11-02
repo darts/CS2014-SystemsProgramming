@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-//look into logical layout, could be doing something funky
-
 //create the bitset scaffold
 struct bitset{
     unsigned int *bits;
@@ -150,6 +148,71 @@ void add_chars_to_set(struct bitset *this, char *charArray){
         unsigned tmp = charArray[i];
         bitset_add(this, tmp);
     }
+}
+
+
+const int BLOOM_SEED1 = 17;
+const int BLOOM_SEED2 = 29;
+
+int hash_string(char * string, int seed, int range){
+    int i;
+    int hash = 0;
+
+  // simple loop for mixing the input string
+  for (i = 0; string[i] != '\0'; i++) {
+    hash = hash * seed + string[i];
+  }
+  // check for unlikely case that hash is negative
+  if (hash < 0) {
+    hash = -hash;
+  }
+  // bring the hash within the range 0..range-1
+  hash = hash % range;
+  
+  return hash;
+}
+
+struct bloom{
+    struct bitset *filter;
+};
+
+// create a new, empty Bloom filter of 'size' items
+struct bloom * bloom_new(int size){
+    struct bloom *theBloom;
+    theBloom->filter = bitset_new(size);
+    return theBloom;
+};
+
+// check to see if a string is in the set
+int bloom_lookup(struct bloom * this, char * item){
+    int hash1 = hash_string(item, BLOOM_SEED1, this->filter->size_in_bits);
+    if(bitset_lookup(this->filter, hash1) == 0)
+        return 0;
+    int hash2 = hash_string(item, BLOOM_SEED2, this->filter->size_in_bits);
+    if(bitset_lookup(this->filter, hash2) == 0)
+        return 0;
+    return 1;
+};
+
+// add a string to the set
+// has no effect if the item is already in the set
+void bloom_add(struct bloom * this, char * item){
+    int hash1 = hash_string(item, BLOOM_SEED1, this->filter->size_in_bits);
+    int hash2 = hash_string(item, BLOOM_SEED2, this->filter->size_in_bits);
+    bitset_add(this->filter, hash1);
+    bitset_add(this->filter, hash2);
+};
+
+// note that you cannot safely remove items from a Bloom filter
+
+// place the union of src1 and src2 into dest
+void bloom_union(struct bloom * dest, struct bloom * src1, struct bloom * src2){
+    bitset_union(dest->filter, src1->filter, src2->filter);
+};
+
+// place the intersection of src1 and src2 into dest
+void bloom_intersect(struct bloom * dest, struct bloom * src1, struct bloom * src2){
+    bitset_intersection(dest->filter, src1->filter, src2->filter);
 }
 
 //Small routine to test a bitset  ------------- this is a testing function
