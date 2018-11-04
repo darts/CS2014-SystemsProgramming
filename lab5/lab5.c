@@ -1,6 +1,12 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+
+const int BLOOM_SEED1 = 17;
+const int BLOOM_SEED2 = 29;
+const char * BLOOM_KEYWORD = "bloom";
+const char * BITSET_KEYWORD = "bitvector";
 
 //create the bitset scaffold
 struct bitset{
@@ -82,8 +88,6 @@ int bitset_lookup(struct bitset *this, int item){
     return 0;
 }
 
-
-
 //add an item with num 'item' to the set
 int bitset_add(struct bitset *this, int item){
     if(this != NULL){
@@ -149,10 +153,6 @@ void add_chars_to_set(struct bitset *this, char *charArray){
         bitset_add(this, tmp);
     }
 }
-
-
-const int BLOOM_SEED1 = 17;
-const int BLOOM_SEED2 = 29;
 
 int hash_string(char * string, int seed, int range){
     int i;
@@ -239,6 +239,53 @@ void myTest(){
     bitset_print(c);
 }
 
+void errExit(){
+    printf("Incorrect number of parameters supplied.\n");
+    printf("Usage: 'bloom' <file1> <file2> OR 'bitvector' <file1>\n");
+    exit(1);
+}
+
+void errNoFile(char *filename){
+    printf("Could not find file with name: %s",filename);
+    exit(1);
+}
+
+
+
 int main(int argc, char ** argv){
-    myTest();
+    char * runType;
+    char * file1;
+    char * file2;
+    int isBloom;
+
+    if ( argc == 2 ) { //2 args -> bitvector
+        runType = argv[1];
+        file1 = argv[2];
+        if(strcmp(runType, BITSET_KEYWORD) != 0)
+            errExit();
+        printf("Running as bitvector.\n");
+        isBloom = 0;
+    }else if ( argc == 3 ) { //3 args -> bloom filter
+        runType = argv[1];
+        file1 = argv[2];
+        file2 = argv[3];
+        if(strcmp(runType, BLOOM_KEYWORD) != 0)
+            errExit();
+        printf("Running as Bloom Filter.\n");
+        isBloom = 1;
+    }else { //num of args != 2|3 -> incorrect usage
+        errExit();
+    }
+
+    FILE *fileA = fopen(file1, "r");
+    FILE *fileB;
+    if(isBloom == 1)
+        fileB = fopen(file2, "r");
+    
+    
+
+
+
+
+
 }
