@@ -34,44 +34,58 @@ void huffcoder_count(struct huffcoder *this, char *filename)
   }
 }
 
-//Get the smallest two characters in the set
-int get_smallest(int freq[])
+//Move the smallest two characters in the set to the front
+void sort_smallest(struct huffchar *huffArr[])
 {
-  int locOfSmallest; //this is the number to void at the end
-  int smallest = -1; //smallest number
-  for (int i = 0; i < NUM_CHARS; i++)//go through the array from the start
+  struct huffchar *smallest = NULL;
+  struct huffchar *secondSmallest = NULL;
+  int smallestLoc = -1;
+  int secondSmallestLoc = -1;
+  for (int i = 0; i < NUM_CHARS; i++) //go through the array from the start
   {
-    if (freq[i] != -1)//number is not void
+    if (huffArr[i] != NULL) //number is not void
     {
-      if (smallest == -1)//first iteration num
+      if (smallest == NULL)
       {
-        smallest = freq[i];
-        if(smallest == 1){//no numbers smaller than 1 -> this is smallest 
-          freq[i] = -1; //set loc to void
-          return smallest;
-        }
+        smallest = huffArr[i];
+        smallestLoc = i;
       }
-      else//this is not the first number
+      else if (huffArr[i]->freq < smallest->freq && huffArr[i]->seqno < smallest->seqno)
       {
-        if(smallest > freq[i]){//if the new number is less than the smallest number 
-          smallest = freq[i]; //set the smallest to the new smallest
-          locOfSmallest = i; //update the location of the smallest number
-        }
-        if(smallest == 1){//is the smallest possible number
-          freq[locOfSmallest] = -1; //set location of smallest to void
-          return smallest;
-        }
+        secondSmallest = smallest;
+        secondSmallestLoc = smallestLoc;
+        smallest = huffArr[i];
+        smallestLoc = i;
+      }else if((huffArr[i]->freq < secondSmallest->freq && huffArr[i]->seqno < secondSmallest->seqno) || secondSmallest == NULL){
+        secondSmallest = huffArr[i];
+        secondSmallestLoc = i;
       }
     }
   }
-  freq[locOfSmallest] = -1; //void the smallest number
-  return smallest;
+
+}
+
+struct huffchar *new_Huff(int freq, int isCompound, int seqNum)
+{
+  struct huffchar *theChar = malloc(sizeof(struct huffchar));
+  theChar->freq = freq;
+  theChar->is_compound = isCompound;
+  theChar->seqno = seqNum;
+  return theChar;
 }
 
 // using the character frequencies build the tree of compound
 // and simple characters that are used to compute the Huffman codes
 void huffcoder_build_tree(struct huffcoder *this)
 {
+  struct huffchar *huffArr[NUM_CHARS];
+  for (int i = 0; i < NUM_CHARS; i++)
+  {
+    huffArr[i] = new_Huff(this->freqs[i], 0, i);
+  }
+  for (int i = 0; i < NUM_CHARS - 1; i++)
+  {
+  }
 }
 
 // recursive function to convert the Huffman tree into a table of
