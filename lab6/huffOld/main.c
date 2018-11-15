@@ -9,13 +9,22 @@
 
 int main(int argc, char ** argv)
 {
-  int char_freqs[NUM_CHARS];
+  // int char_freqs[NUM_CHARS];
   struct huffcoder * coder;
 
   if ( argc != 2 ) {
     fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
     exit(1);
   }
+
+  int *i = malloc(sizeof(int));
+  int *j = malloc(sizeof(int));
+  *i = 1;
+  *j = *i;
+  *i = 2;
+
+  fprintf(stderr, "%d   %d\n", *i, *j);
+  
 
   // create a new huffcoder structure
   coder = huffcoder_new();
