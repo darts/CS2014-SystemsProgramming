@@ -92,9 +92,9 @@ void huffcoder_build_tree(struct huffcoder * this)
   for(int i = 0; i < NUM_CHARS; i++){
     sortList(charArr, NUM_CHARS - i);
     charArr[0] = combine_huffs(charArr[0], charArr[1], NUM_CHARS + i);
-    swapChars(charArr, 1, (NUM_CHARS - 1)- i);
+    if(i < NUM_CHARS - 1)
+      swapChars(charArr, 1, (NUM_CHARS - 1)- i);
   }
-  swapChars(charArr, 0, 1);
   this->tree = charArr[0];
 }
 
