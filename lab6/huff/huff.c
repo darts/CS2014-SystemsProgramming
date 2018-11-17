@@ -10,16 +10,14 @@
 
 
 // create a new huffcoder structure
-struct huffcoder *  huffcoder_new()
-{
+struct huffcoder *  huffcoder_new(){
   struct huffcoder *theCoder = malloc(sizeof(struct huffcoder));
   return theCoder;
 }
 
 // count the frequency of characters in a file; set chars with zero
 // frequency to one
-void huffcoder_count(struct huffcoder * this, char * filename)
-{
+void huffcoder_count(struct huffcoder * this, char * filename){
   unsigned char c;  // we need the character to be
                     // unsigned to use it as an index
   FILE * file;
@@ -76,8 +74,7 @@ struct huffchar * combine_huffs(struct huffchar *huffL, struct huffchar *huffR, 
 
 // using the character frequencies build the tree of compound
 // and simple characters that are used to compute the Huffman codes
-void huffcoder_build_tree(struct huffcoder * this)
-{
+void huffcoder_build_tree(struct huffcoder * this){
   struct huffchar *charArr[NUM_CHARS];
   for(int i = 0; i < NUM_CHARS; i++){
     struct huffchar *theChar = huffchar_new();
@@ -101,8 +98,7 @@ void huffcoder_build_tree(struct huffcoder * this)
 // recursive function to convert the Huffman tree into a table of
 // Huffman codes
 void tree2table_recursive(struct huffcoder * this, struct huffchar * node,
-		 int path, int depth)
-{
+		 int path, int depth){
   if(node->is_compound == 1){
     path <<= 1;
     tree2table_recursive(this, node->u.compound.left, path, depth+1);
@@ -116,15 +112,13 @@ void tree2table_recursive(struct huffcoder * this, struct huffchar * node,
 
 // using the Huffman tree, build a table of the Huffman codes
 // with the huffcoder object
-void huffcoder_tree2table(struct huffcoder * this)
-{
+void huffcoder_tree2table(struct huffcoder * this){
   tree2table_recursive(this, this->tree, 0, 0);
 }
 
 
 // print the Huffman codes for each character in order
-void huffcoder_print_codes(struct huffcoder * this)
-{
+void huffcoder_print_codes(struct huffcoder * this){
   int i, j;
   char buffer[NUM_CHARS];
 
