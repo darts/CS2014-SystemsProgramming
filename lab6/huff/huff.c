@@ -88,39 +88,55 @@ void huffcoder_build_tree(struct huffcoder * this)
     theChar->is_compound = 0;
     theChar->seqno = i;
     charArr[i] = theChar;
+    // fprintf(stderr, "char:%d  freq:%d\n", theChar->u.c, theChar->freq);
   }
   for(int i = 0; i < NUM_CHARS; i++){
     // fprintf(stderr, "1   freqA:%d  freqB:%d\n",charArr[0]->freq, charArr[1]->freq);
     sortList(charArr, NUM_CHARS - i);
+    fprintf(stderr, "char:%d\n", charArr[0]->u.c);
     // fprintf(stderr, "2   freqA:%d  freqB:%d\n",charArr[0]->freq, charArr[1]->freq);
     charArr[0] = combine_huffs(charArr[0], charArr[1], NUM_CHARS + i);
-    fprintf(stderr, "2   A:%d, B:%d, AB:%d\n", charArr[0]->u.compound.left->freq, charArr[0]->u.compound.right->freq, charArr[0]->freq );
+    // fprintf(stderr, "2   A:%d, B:%d, AB:%d\n", charArr[0]->u.compound.left->freq, charArr[0]->u.compound.right->freq, charArr[0]->freq );
     // printHuff(charArr[0]);
     // fprintf(stderr, "3   freqA:%d  freqB:%d\n",charArr[0]->freq, charArr[1]->freq);
-    fprintf(stderr, "3   A:%d, B:%d, AB:%d\n", charArr[0]->u.compound.left->freq, charArr[0]->u.compound.right->freq, charArr[0]->freq );
+    // fprintf(stderr, "3   A:%d, B:%d, AB:%d\n", charArr[0]->u.compound.left->freq, charArr[0]->u.compound.right->freq, charArr[0]->freq );
     swapChars(charArr, 1, (NUM_CHARS - 1)- i);
-    fprintf(stderr, "4   A:%d, B:%d, AB:%d\n", charArr[0]->u.compound.left->freq, charArr[0]->u.compound.right->freq, charArr[0]->freq );
+    // fprintf(stderr, "4   A:%d, B:%d, AB:%d\n", charArr[0]->u.compound.left->freq, charArr[0]->u.compound.right->freq, charArr[0]->freq );
     // fprintf(stderr, "4   freqA:%d  freqB:%d\n",charArr[0]->freq, charArr[1]->freq);
   }
   this->tree = charArr[0];
 }
 
+void printBin(unsigned num, int strtAt){
+    unsigned mask = 2147483648;
+    for(int i = 0; i < 32; i++){
+      if(i > strtAt){
+        if((num & mask) == 0)
+            fprintf(stderr,"0");
+        else    
+            fprintf(stderr, "1");
+      }
+      num<<=1;
+    }
+    fprintf(stderr,"\n");
+}
 
 // recursive function to convert the Huffman tree into a table of
 // Huffman codes
 void tree2table_recursive(struct huffcoder * this, struct huffchar * node,
-		 int *path, int depth)
+		 int path, int depth)
 {
   // fprintf(stderr, "this is recursion");
   // fprintf(stderr, "%d\n", node->freq);
   if(node->is_compound == 1){
-    *path <<= 1;
+    path <<= 1;
     tree2table_recursive(this, node->u.compound.left, path, depth+1);
-    *path |= 1;
+    path |= 1;
     // fprintf(stderr,"path: %d\n", path);
     tree2table_recursive(this, node->u.compound.right, path, depth+1);
   }else{
-    fprintf(stderr, "char:%d path:%d depth:%d\n", node->u.c, *path,depth);
+    fprintf(stderr, "char:%d path:%d depth:%d\n", node->u.c, path,depth);
+    printBin(path,32-depth);
     this->codes[node->u.c] = (long)path;
     this->code_lengths[node->u.c] = depth;
   }
@@ -143,12 +159,12 @@ void huffcoder_print_codes(struct huffcoder * this)
   for ( i = 0; i < NUM_CHARS; i++ ) {
     // put the code into a string
     for ( j = this->code_lengths[i]-1; j >= 0; j--) {
-      buffer[j] = (this->codes[i] >> j) & 1 + '0';
+      buffer[j] = ((this->codes[i] >> j) & 1) + '0';
     }
     // don't forget to add a zero to end of string
     buffer[this->code_lengths[i]] = '\0';
 
     // print the code
-    printf("char: %d, freq: %d, code: %s\n", i, this->freqs[i], buffer);;
+    printf("char: %d, freq: %d, code: %s **depth%d\n", i, this->freqs[i], buffer, this->code_lengths[i]);
   }
 }
