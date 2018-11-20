@@ -37,10 +37,6 @@ struct huffchar * huffchar_new(){
   return theChar;
 }
 
-void printHuff(struct huffchar *theChar){
-  fprintf(stderr, "%d %d %d\n", theChar->freq,theChar->is_compound, theChar->seqno);
-}
-
 void swapChars(struct huffchar *charArr[], int locA, int locB){
   struct huffchar *tmpA = huffchar_new();
   tmpA = charArr[locA];
