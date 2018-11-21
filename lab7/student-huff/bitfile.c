@@ -9,15 +9,21 @@
 #include "bitfile.h"
 
 // open a bit file in "r" (read) mode or "w" (write) mode
+//readmode 1=read, 0=write 
 struct bitfile * bitfile_open(char * filename, char * mode)
 {
-
+    struct bitfile * theFile = malloc(sizeof(struct bitfile));
+    theFile->file = fopen(filename, mode);
+    theFile->is_read_mode = ((!*mode) & 1);
+    return theFile;
 }
 
 // write a bit to a file; the file must have been opened in write mode
 void bitfile_write_bit(struct bitfile * this, int bit)
 {
-
+    if(!this->is_read_mode){
+        
+    }
 }
 
 // read a bit from a file; the file must have been opened in read mode

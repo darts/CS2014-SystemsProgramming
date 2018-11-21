@@ -165,14 +165,34 @@ void huffcoder_encode(struct huffcoder *this, char *input_filename,
   FILE * outputFile = fopen(output_filename, "w");
 
   char theChar;
-  while((theChar = getc(inputFile)) != EOF){
-
+  int outChar = 0;
+  int count = 31;
+  while((theChar = fgetc(inputFile)) != EOF){
+    int theCode = this->codes[theChar];
+    for(int i = this->code_lengths[theChar]; i > 0; i--){
+      if((theCode & 1) == 1)
+        outChar |= (1 << count);
+      if(--count < 0){
+        count = 31;
+        fprintf(outputFile, "%d", outChar);
+        outChar = 0;
+      }
+    }
   }
-
+  fclose(inputFile);
+  fclose(outputFile);
 }
 
 // decode the input file and write the decoding to the output file
 void huffcoder_decode(struct huffcoder *this, char *input_filename,
                       char *output_filename)
 {
+ FILE * inputFile = fopen(input_filename,"r");
+  FILE * outputFile = fopen(output_filename, "w");
+
+  char theChar;
+  int outChar = 0;
+  while((theChar = getc(inputFile)) != EOF){
+  
+  } 
 }
