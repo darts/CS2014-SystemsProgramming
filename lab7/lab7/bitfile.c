@@ -19,17 +19,17 @@ struct bitfile * bitfile_open(char * filename, char * mode)
     theFile->index = BIT_MAX;
     return theFile;
 }
-void printBin(unsigned num){
-    unsigned mask = 2147483648;
-    for(int i = 0; i < 32; i++){
-        if((num & mask) == 0)
-            fprintf(stderr,"0");
-        else    
-            fprintf(stderr,"1");
-        num<<=1;
-    }
-    fprintf(stderr,"\n");
-}
+// void printBin(unsigned num){
+//     unsigned mask = 2147483648;
+//     for(int i = 0; i < 32; i++){
+//         if((num & mask) == 0)
+//             fprintf(stderr,"0");
+//         else    
+//             fprintf(stderr,"1");
+//         num<<=1;
+//     }
+//     fprintf(stderr,"\n");
+// }
 // write a bit to a file; the file must have been opened in write mode
 void bitfile_write_bit(struct bitfile * this, int bit)
 {
@@ -57,7 +57,7 @@ int bitfile_read_bit(struct bitfile * this)
             this->buffer = fgetc(this->file);
             this->index = BIT_MAX;
         }
-        return (this->buffer & (1 << this->index--));
+        return (this->buffer & (1 << this->index) >> this->index--);
     }
     return -1;
 }
