@@ -169,19 +169,40 @@ void huffcoder_print_codes(struct huffcoder *this)
     ;
   }
 }
-
+// void printBin(unsigned num){
+//     unsigned mask = 2147483648;
+//     for(int i = 0; i < 32; i++){
+//         if((num & mask) == 0)
+//             fprintf(stderr,"0");
+//         else    
+//             fprintf(stderr,"1");
+//         num<<=1;
+//     }
+//     fprintf(stderr,"\n");
+// }
 // encode the input file and write the encoding to the output file
 void huffcoder_encode(struct huffcoder *this, char *input_filename,
                       char *output_filename)
 {
-  // struct bitfile * inFile = bitfile_open(input_filename, "r");
   struct bitfile * outFile = bitfile_open(output_filename, "w");
   FILE * readFile = fopen(input_filename, "r");
-  char currentChar;
-  while((currentChar = fgetc(readFile)) != EOF){
-    for(int i = this->code_lengths[(int)currentChar]; i >= 0; i--){
-      bitfile_write_bit(outFile, (*this->codes & (1 << i)));
+  char currentChar = fgetc(readFile);
+  while(!feof(readFile)){
+    // printBin(this->codes[currentChar]);
+    // for(int i = this->code_lengths[currentChar]; i >= 0; i--){
+    //   bitfile_write_bit(outFile, (this->codes[currentChar] & (1 << i) >> i));
+    // }
+    int max = this->code_lengths[currentChar];
+    int numToWrite = this->codes[currentChar];
+    for(int i = 0; i <= max; i++){
+      bitfile_write_bit(outFile, (numToWrite >> i) & 1);
     }
+
+    // for(int i = 0; i < this->code_lengths[currentChar]){
+    //   (this->codes[i] >> j) & 1)
+    // }
+
+    currentChar = fgetc(readFile);
   }
   bitfile_close(outFile);
 }
@@ -190,9 +211,8 @@ void huffcoder_encode(struct huffcoder *this, char *input_filename,
 void huffcoder_decode(struct huffcoder *this, char *input_filename,
                       char *output_filename)
 {
-  
  FILE * inputFile = fopen(input_filename,"r");
-  FILE * outputFile = fopen(output_filename, "w");
+ FILE * outputFile = fopen(output_filename, "w");
 
   char theChar;
   int outChar = 0;
