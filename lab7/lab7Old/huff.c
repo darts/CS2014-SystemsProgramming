@@ -4,6 +4,7 @@
 #include <ctype.h>
 
 #include "huff.h"
+#include "bitfile.h"
 
 // create a new huffcoder structure
 struct huffcoder *huffcoder_new()
@@ -27,6 +28,10 @@ void huffcoder_count(struct huffcoder *this, char *filename)
   {                   //While there are bytes to read
     this->freqs[c]++; //increment the counter of the character found
     c = fgetc(file);  //get the next character
+  }
+  for(int i = 0; i < NUM_CHARS; i++){
+    if(this->freqs[i] == 0)
+      this->freqs[i] = 1;
   }
   fclose(file);
 }
@@ -90,8 +95,8 @@ void huffcoder_build_tree(struct huffcoder *this)
     struct huffchar *theChar = huffchar_new();
     theChar->u.c = i;
     theChar->freq = this->freqs[i];
-    if (theChar->freq == 0)
-      theChar->freq = 1;
+    // if (theChar->freq == 0)
+    //   theChar->freq = 1;
     theChar->is_compound = 0;
     theChar->seqno = i;
     charArr[i] = theChar;
@@ -122,6 +127,21 @@ void tree2table_recursive(struct huffcoder *this, struct huffchar *node,
   }
   else
   {
+    //My code was printing mirror images of the desired result (eg 001001 -> 100100).
+    //This fixes it. 
+    int newPath = 0;
+    int tmpPath = path;
+    for(int i = 0; i <= depth; i++){
+      newPath |= (tmpPath >> i) & 1;
+      // int mask = tmpPath & 1;
+      // newPath = newPath | mask;
+      // tmpPath = tmpPath >> 1;
+      newPath = newPath << 1;
+    }
+    newPath >>= 2;
+    newPath |= (tmpPath >> depth) & 1;
+    // fprintf(stderr, "%d    %d\n", path, newPath);
+    path = newPath;
     this->codes[node->u.c] = (long)path;
     this->code_lengths[node->u.c] = depth;
   }
@@ -161,32 +181,23 @@ void huffcoder_print_codes(struct huffcoder *this)
 void huffcoder_encode(struct huffcoder *this, char *input_filename,
                       char *output_filename)
 {
-  FILE * inputFile = fopen(input_filename,"r");
-  FILE * outputFile = fopen(output_filename, "w");
-
-  char theChar;
-  int outChar = 0;
-  int count = 31;
-  while((theChar = fgetc(inputFile)) != EOF){
-    int theCode = this->codes[theChar];
-    for(int i = this->code_lengths[theChar]; i > 0; i--){
-      if((theCode & 1) == 1)
-        outChar |= (1 << count);
-      if(--count < 0){
-        count = 31;
-        fprintf(outputFile, "%d", outChar);
-        outChar = 0;
-      }
+  // struct bitfile * inFile = bitfile_open(input_filename, "r");
+  struct bitfile * outFile = bitfile_open(output_filename, "w");
+  FILE * readFile = fopen(input_filename, "r");
+  char currentChar;
+  while((currentChar = fgetc(readFile)) != EOF){
+    for(int i = this->code_lengths[(int)currentChar]; i >= 0; i--){
+      bitfile_write_bit(outFile, (*this->codes & (1 << i)));
     }
   }
-  fclose(inputFile);
-  fclose(outputFile);
+  bitfile_close(outFile);
 }
 
 // decode the input file and write the decoding to the output file
 void huffcoder_decode(struct huffcoder *this, char *input_filename,
                       char *output_filename)
 {
+  
  FILE * inputFile = fopen(input_filename,"r");
   FILE * outputFile = fopen(output_filename, "w");
 
