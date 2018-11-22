@@ -95,14 +95,12 @@ void huffcoder_build_tree(struct huffcoder *this)
     struct huffchar *theChar = huffchar_new();
     theChar->u.c = i;
     theChar->freq = this->freqs[i];
-    // if (theChar->freq == 0)
-    //   theChar->freq = 1;
     theChar->is_compound = 0;
     theChar->seqno = i;
     charArr[i] = theChar;
   }
   //Combine the two smallest huffchars until one is left
-  for (int i = 0; i < NUM_CHARS; i++)
+  for (int i = 0; i < NUM_CHARS -1; i++)
   {
     sortList(charArr, NUM_CHARS - i);
     charArr[0] = combine_huffs(charArr[0], charArr[1], NUM_CHARS + i);
@@ -121,28 +119,23 @@ void tree2table_recursive(struct huffcoder *this, struct huffchar *node,
   if (node->is_compound == 1)
   {
     path <<= 1;
-    tree2table_recursive(this, node->u.compound.left, path, depth + 1);
+    tree2table_recursive(this, node->u.compound.left, path, ++depth);
     path |= 1;
-    tree2table_recursive(this, node->u.compound.right, path, depth + 1);
+    tree2table_recursive(this, node->u.compound.right, path, depth);
   }
   else
   {
     //My code was printing mirror images of the desired result (eg 001001 -> 100100).
-    //This fixes it. 
+    //This "fixes" it. 
     int newPath = 0;
-    int tmpPath = path;
     for(int i = 0; i <= depth; i++){
-      newPath |= (tmpPath >> i) & 1;
-      // int mask = tmpPath & 1;
-      // newPath = newPath | mask;
-      // tmpPath = tmpPath >> 1;
+      newPath |= (path >> i) & 1;
       newPath = newPath << 1;
     }
     newPath >>= 2;
-    newPath |= (tmpPath >> depth) & 1;
-    // fprintf(stderr, "%d    %d\n", path, newPath);
+    newPath |= (path >> depth) & 1;
     path = newPath;
-    this->codes[node->u.c] = (long)path;
+    this->codes[node->u.c] = path;
     this->code_lengths[node->u.c] = depth;
   }
 }
