@@ -6,6 +6,8 @@
 #include "huff.h"
 #include "bitfile.h"
 
+#define EOTloc 4
+
 // create a new huffcoder structure
 struct huffcoder *huffcoder_new()
 {
@@ -180,6 +182,13 @@ void huffcoder_print_codes(struct huffcoder *this)
 //     }
 //     fprintf(stderr,"\n");
 // }
+
+void writeEOT(struct huffcoder * this, struct bitfile * bitF){
+  for(int i = 0; i < this->code_lengths[EOTloc]; i++){
+    bitfile_write_bit(bitF, (this->codes[EOTloc] >> i) & 1);
+  }
+}
+
 // encode the input file and write the encoding to the output file
 void huffcoder_encode(struct huffcoder *this, char *input_filename,
                       char *output_filename)
@@ -188,22 +197,14 @@ void huffcoder_encode(struct huffcoder *this, char *input_filename,
   FILE * readFile = fopen(input_filename, "r");
   char currentChar = fgetc(readFile);
   while(!feof(readFile)){
-    // printBin(this->codes[currentChar]);
-    // for(int i = this->code_lengths[currentChar]; i >= 0; i--){
-    //   bitfile_write_bit(outFile, (this->codes[currentChar] & (1 << i) >> i));
-    // }
     int max = this->code_lengths[currentChar];
     int numToWrite = this->codes[currentChar];
-    for(int i = 0; i <= max; i++){
+    for(int i = 0; i < max; i++){
       bitfile_write_bit(outFile, (numToWrite >> i) & 1);
     }
-
-    // for(int i = 0; i < this->code_lengths[currentChar]){
-    //   (this->codes[i] >> j) & 1)
-    // }
-
     currentChar = fgetc(readFile);
   }
+  writeEOT(this, outFile);
   bitfile_close(outFile);
 }
 
