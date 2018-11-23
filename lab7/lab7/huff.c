@@ -31,7 +31,7 @@ void huffcoder_count(struct huffcoder *this, char *filename)
     this->freqs[c]++; //increment the counter of the character found
     c = fgetc(file);  //get the next character
   }
-  for (int i = 0; i < NUM_CHARS; i++)
+  for (int i = 0; i < NUM_CHARS; i++) //if a character doesn't appear, give it a freq of 1
   {
     if (this->freqs[i] == 0)
       this->freqs[i] = 1;
@@ -121,9 +121,9 @@ void tree2table_recursive(struct huffcoder *this, struct huffchar *node,
   //recursively call this function until we get to a leaf
   if (node->is_compound == 1)
   {
-    path <<= 1;
+    path <<= 1;//going left, shift path 
     tree2table_recursive(this, node->u.compound.left, path, ++depth);
-    path |= 1;
+    path |= 1;//going right, ORR 1 with path
     tree2table_recursive(this, node->u.compound.right, path, depth);
   }
   else
@@ -150,6 +150,7 @@ void huffcoder_tree2table(struct huffcoder *this)
 {
   tree2table_recursive(this, this->tree, 0, 0);
 }
+
 // print the Huffman codes for each character in order;
 // you should not modify this function
 void huffcoder_print_codes(struct huffcoder *this)
@@ -173,20 +174,8 @@ void huffcoder_print_codes(struct huffcoder *this)
     ;
   }
 }
-void printBin(unsigned num)
-{
-  unsigned mask = 2147483648;
-  for (int i = 0; i < 32; i++)
-  {
-    if ((num & mask) == 0)
-      fprintf(stderr, "0");
-    else
-      fprintf(stderr, "1");
-    num <<= 1;
-  }
-  fprintf(stderr, "\n");
-}
 
+//Write the end of transmission to a file.
 void writeEOT(struct huffcoder *this, struct bitfile *bitF)
 {
   int EOTlength = this->code_lengths[EOTloc];
@@ -204,20 +193,20 @@ void huffcoder_encode(struct huffcoder *this, char *input_filename,
   struct bitfile *outFile = bitfile_open(output_filename, "w");
   FILE *readFile = fopen(input_filename, "r");
   unsigned char currentChar = fgetc(readFile);
+  //While there are characters left
   while (!feof(readFile))
   {
     int numToWrite = this->codes[currentChar];
     int max = this->code_lengths[currentChar];
-    for (int i = 0; i < max; i++)
-    {
+    for (int i = 0; i < max; i++)//for every bit in a code, write the bit
       bitfile_write_bit(outFile, (numToWrite >> i) & 1);
-    }
-    currentChar = fgetc(readFile);
+    currentChar = fgetc(readFile);//get the next one
   }
-  writeEOT(this, outFile);
+  writeEOT(this, outFile);//Done, time to tidy up
   bitfile_close(outFile);
 }
 
+//go left or right depending on the bit.
 struct huffchar *walk_tree(struct huffchar *this, int bit)
 {
   if (bit == 0)
@@ -230,23 +219,23 @@ void huffcoder_decode(struct huffcoder *this, char *input_filename,
                       char *output_filename)
 {
   struct bitfile *rFile = bitfile_open(input_filename, "r");
-  FILE *outFile = fopen(output_filename, "r");
+  FILE *outFile = fopen(output_filename, "w");
 
-  unsigned char theChar;
-  int outChar = 0;
   int finished = 0;
-  struct huffchar *currentHuff = this->tree;
-  while (!finished)
+  struct huffchar *currentHuff = malloc(sizeof(struct huffchar));
+  *currentHuff = *this->tree;
+  while (!finished)//while EOT not reached
   {
     int theBit = bitfile_read_bit(rFile);
-    currentHuff = walk_tree(currentHuff, theBit);
-    if (!currentHuff->is_compound)
+    *currentHuff = *walk_tree(currentHuff, theBit);//walk along the tree
+    if (!currentHuff->is_compound)//if we have reached a leaf
     {
-      if (currentHuff->u.c != EOTloc)
+      if (currentHuff->u.c != EOTloc) //write the character if it is not EOT
         fputc(currentHuff->u.c, outFile);
-      else
+      else //Char is EOT -> we are done!
         finished = 1;
-      currentHuff = this->tree;
+      *currentHuff = *this->tree; //Back to the start
     }
   }
+  bitfile_close(rFile);//clean up time!
 }
