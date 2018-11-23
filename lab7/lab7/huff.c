@@ -197,16 +197,10 @@ void huffcoder_encode(struct huffcoder *this, char *input_filename,
 {
   struct bitfile * outFile = bitfile_open(output_filename, "w");
   FILE * readFile = fopen(input_filename, "r");
-  char currentChar = fgetc(readFile);
+  unsigned char currentChar = fgetc(readFile);
   while(!feof(readFile)){
-    // fprintf(stderr, "%c\n", currentChar);
-    // fprintf(stderr, "%d\n", currentChar);
-    // if((int)currentChar == -30)
-    //   huffcoder_print_codes(this);
-    int numToWrite = this->codes[(int)currentChar];
+    int numToWrite = this->codes[currentChar];
     int max = this->code_lengths[currentChar];
-    // fprintf(stderr, "%d   ", this->code_lengths[currentChar]);
-    // printBin(numToWrite);
     for(int i = 0; i < max; i++){
       bitfile_write_bit(outFile, (numToWrite >> i) & 1);
     }
@@ -229,7 +223,7 @@ void huffcoder_decode(struct huffcoder *this, char *input_filename,
   struct bitfile * rFile = bitfile_open(input_filename, "r");
  FILE * outFile = fopen(output_filename,"r");
 
-  char theChar;
+  unsigned char theChar;
   int outChar = 0;
   int finished = 0;
   struct huffchar * currentHuff = this->tree;
