@@ -60,7 +60,7 @@ int bitfile_read_bit(struct bitfile *this)
         this->buffer = fgetc(this->file);
         this->index = BIT_MIN;
     }
-    return ((this->buffer & (1 << this->index)) >> this->index++);//return the bit
+    return ((this->buffer & (1 << this->index)) >> (this->index)++);//return the bit
 }
 
 // close a bitfile; flush any partially-filled buffer if file is open in write mode
