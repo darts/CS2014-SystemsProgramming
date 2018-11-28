@@ -139,6 +139,7 @@ void tree2table_recursive(struct huffcoder *this, struct huffchar *node,
     newPath >>= 2;
     newPath |= (path >> depth) & 1;
     path = newPath;
+
     this->codes[node->u.c] = path;
     this->code_lengths[node->u.c] = depth;
   }
@@ -220,7 +221,6 @@ void huffcoder_decode(struct huffcoder *this, char *input_filename,
 {
   struct bitfile *rFile = bitfile_open(input_filename, "r");
   FILE *outFile = fopen(output_filename, "w");
-
   int finished = 0;
   struct huffchar *currentHuff = malloc(sizeof(struct huffchar));
   *currentHuff = *this->tree;
